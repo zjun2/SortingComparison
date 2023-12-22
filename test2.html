@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Array Drawing</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas" width="800" height="600"></canvas>
+
+  <script>
+    function generateRandomArray(min, max, size) {
+      const randomArray = [];
+      
+      for (let i = 0; i < size; i++) {
+        const randomInt = Math.floor(Math.random() * (max - min + 1)) + min;
+        randomArray.push(randomInt);
+      }
+      
+      return randomArray;
+    }
+
+    function generateShuffledArray(size) {
+        const shuffledArray = Array.from({ length: size }, (_, index) => index + 1);
+
+        // Fisher-Yates 洗牌算法
+        for (let i = shuffledArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+        }
+
+        return shuffledArray;
+        }
+
+    function drawVerticalLines(canvas, dataArray) {
+      const context = canvas.getContext("2d");
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      // 清空画布
+      context.clearRect(0, 0, canvasWidth, canvasHeight);
+
+      const barWidth = canvasWidth / dataArray.length;
+
+      dataArray.forEach((value, index) => {
+        const barHeight = value * (canvasHeight / 100); // 缩放以适应画布高度
+        const x = index * barWidth;
+        const y = canvasHeight - barHeight; // 从底部开始画
+
+        context.fillStyle = "blue";
+        context.fillRect(x, y, barWidth, barHeight);
+      });
+      
+    }
+
+    async function bubbleSortWithDrawing(array, canvas) {
+      const n = array.length;
+
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+          // 交换相邻元素
+          if (array[j] > array[j + 1]) {
+            const temp = array[j];
+            array[j] = array[j + 1];
+            array[j + 1] = temp;
+          }
+
+          // 每次交换后绘制数组
+          drawVerticalLines(canvas, array);
+          console.log(i,j,"绘制完成")
+          await new Promise(resolve => setTimeout(resolve, 5)); // 添加延迟以便观察
+        }
+      }
+    }
+
+    // 生成一个包含 10 个元素，元素范围在 1 到 10 之间的数组
+    // const dataArray = generateRandomArray(1, 100, 1000);
+    const dataArray = generateShuffledArray(100);
+
+    // 获取 canvas 元素
+    const canvas = document.getElementById("myCanvas");
+
+    // 绘制初始数组
+    drawVerticalLines(canvas, dataArray);
+
+    // 执行冒泡排序并绘制过程
+    bubbleSortWithDrawing(dataArray, canvas);
+
+    
+  </script>
+</body>
+</html>

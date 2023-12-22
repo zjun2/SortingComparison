@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sorting Algorithms with Drawing</title>
+  <style>
+    .sorting-canvas {
+      border: 1px solid #000;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+    <div>
+        <canvas id="bubbleSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>冒泡排序</p>
+      </div>
+      <div>
+        <canvas id="selectionSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>选择排序</p>
+      </div>
+      <div>
+        <canvas id="insertionSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>插入排序</p>
+      </div>
+      <div>
+        <canvas id="mergeSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>归并排序</p>
+      </div>
+      <div>
+        <canvas id="quickSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>快速排序</p>
+      </div>
+      <div>
+        <canvas id="heapSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>堆排序</p>
+      </div>
+      <div>
+        <canvas id="countingSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>计数排序</p>
+      </div>
+      <div>
+        <canvas id="bucketSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>桶排序</p>
+      </div>
+      <div>
+        <canvas id="radixSortCanvas" class="sorting-canvas" width="800" height="100"></canvas>
+        <p>基数排序</p>
+      </div>
+
+  <script>
+    const SIZE = 100;
+
+    function generateShuffledArray(size) {
+      const shuffledArray = Array.from({ length: size }, (_, index) => index + 1);
+
+      // Fisher-Yates 洗牌算法
+      for (let i = shuffledArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+      }
+
+      return shuffledArray;
+    }
+
+    function drawVerticalLines(canvas, dataArray, algorithmName) {
+      const context = canvas.getContext("2d");
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      // 清空画布
+      context.clearRect(0, 0, canvasWidth, canvasHeight);
+
+      const barWidth = canvasWidth / dataArray.length;
+
+      dataArray.forEach((value, index) => {
+        const barHeight = value * (canvasHeight / SIZE); // 缩放以适应画布高度
+        const x = index * barWidth;
+        const y = canvasHeight - barHeight; // 从底部开始画
+
+        context.fillStyle = "blue";
+        context.fillRect(x, y, barWidth, barHeight);
+      });
+
+      // 显示当前排序算法名称（中文）
+      context.fillStyle = "black";
+      context.font = "14px Arial";
+      context.fillText(algorithmName, 10, 20);
+    }
+
+    async function bubbleSort(array, canvas) {
+      const copiedArray = [...array];
+      const n = copiedArray.length;
+
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+          if (copiedArray[j] > copiedArray[j + 1]) {
+            [copiedArray[j], copiedArray[j + 1]] = [copiedArray[j + 1], copiedArray[j]];
+          }
+
+          drawVerticalLines(canvas, copiedArray, "冒泡排序");
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+      }
+    }
+
+    async function selectionSort(array, canvas) {
+      const copiedArray = [...array];
+      const n = copiedArray.length;
+
+      for (let i = 0; i < n - 1; i++) {
+        let minIndex = i;
+
+        for (let j = i + 1; j < n; j++) {
+          if (copiedArray[j] < copiedArray[minIndex]) {
+            minIndex = j;
+          }
+        }
+
+        [copiedArray[i], copiedArray[minIndex]] = [copiedArray[minIndex], copiedArray[i]];
+
+        drawVerticalLines(canvas, copiedArray, "选择排序");
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+    }
+
+    async function insertionSort(array, canvas) {
+      const copiedArray = [...array];
+      const n = copiedArray.length;
+
+      for (let i = 1; i < n; i++) {
+        const key = copiedArray[i];
+        let j = i - 1;
+
+        while (j >= 0 && copiedArray[j] > key) {
+          copiedArray[j + 1] = copiedArray[j];
+          j--;
+        }
+
+        copiedArray[j + 1] = key;
+
+        drawVerticalLines(canvas, copiedArray, "插入排序");
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+    }
+
+    function insertionSort2(array, canvas) {
+      const copiedArray = [...array];
+      const n = copiedArray.length;
+
+      for (let i = 1; i < n; i++) {
+        const key = copiedArray[i];
+        let j = i - 1;
+
+        while (j >= 0 && copiedArray[j] > key) {
+          copiedArray[j + 1] = copiedArray[j];
+          j--;
+        }
+
+        copiedArray[j + 1] = key;
+      }
+      return copiedArray;
+    }
+
+    async function runSortingAlgorithm(algorithm, array, canvas) {
+      await algorithm(array, canvas);
+      console.log(algorithm.name + " 排序完成");
+    }
+
+    
+
+
+    async function mergeSort(array, canvas) {
+      const copiedArray = [...array];
+
+      async function merge(left, middle, right) {
+        const n1 = middle - left + 1;
+        const n2 = right - middle;
+
+        const leftArray = new Array(n1);
+        const rightArray = new Array(n2);
+
+        for (let i = 0; i < n1; i++) {
+          leftArray[i] = copiedArray[left + i];
+        }
+
+        for (let j = 0; j < n2; j++) {
+          rightArray[j] = copiedArray[middle + 1 + j];
+        }
+
+        let i = 0;
+        let j = 0;
+        let k = left;
+
+        while (i < n1 && j < n2) {
+          if (leftArray[i] <= rightArray[j]) {
+            copiedArray[k] = leftArray[i];
+            i++;
+          } else {
+            copiedArray[k] = rightArray[j];
+            j++;
+          }
+          k++;
+        }
+
+        while (i < n1) {
+          copiedArray[k] = leftArray[i];
+          i++;
+          k++;
+        }
+
+        while (j < n2) {
+          copiedArray[k] = rightArray[j];
+          j++;
+          k++;
+        }
+      }
+
+      async function mergeSortUtil(left, right) {
+        if (left < right) {
+          const middle = Math.floor(left + (right - left) / 2);
+
+          await mergeSortUtil(left, middle);
+          await mergeSortUtil(middle + 1, right);
+
+          await merge(left, middle, right);
+
+          drawVerticalLines(canvas, copiedArray, "归并排序");
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+      }
+
+      await mergeSortUtil(0, copiedArray.length - 1);
+    }
+
+    async function quickSort(array, canvas) {
+      const copiedArray = [...array];
+
+      async function partition(low, high) {
+        const pivot = copiedArray[high];
+        let i = low - 1;
+
+        for (let j = low; j <= high - 1; j++) {
+          if (copiedArray[j] < pivot) {
+            i++;
+            [copiedArray[i], copiedArray[j]] = [copiedArray[j], copiedArray[i]];
+          }
+        }
+
+        [copiedArray[i + 1], copiedArray[high]] = [copiedArray[high], copiedArray[i + 1]];
+        return i + 1;
+      }
+
+      async function quickSortUtil(low, high) {
+        if (low < high) {
+          const pi = await partition(low, high);
+
+          await quickSortUtil(low, pi - 1);
+          await quickSortUtil(pi + 1, high);
+
+          drawVerticalLines(canvas, copiedArray, "快速排序");
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+      }
+
+      await quickSortUtil(0, copiedArray.length - 1);
+    }
+
+    async function heapSort(array, canvas) {
+      const copiedArray = [...array];
+
+      async function heapify(n, i) {
+        let largest = i;
+        const left = 2 * i + 1;
+        const right = 2 * i + 2;
+
+        if (left < n && copiedArray[left] > copiedArray[largest]) {
+          largest = left;
+        }
+
+        if (right < n && copiedArray[right] > copiedArray[largest]) {
+          largest = right;
+        }
+
+        if (largest !== i) {
+          [copiedArray[i], copiedArray[largest]] = [copiedArray[largest], copiedArray[i]];
+          await heapify(n, largest);
+        }
+      }
+
+      async function heapSortUtil() {
+        const n = copiedArray.length;
+
+        for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+          await heapify(n, i);
+        }
+
+        for (let i = n - 1; i >= 0; i--) {
+          [copiedArray[0], copiedArray[i]] = [copiedArray[i], copiedArray[0]];
+          await heapify(i, 0);
+
+          drawVerticalLines(canvas, copiedArray, "堆排序");
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+      }
+
+      await heapSortUtil();
+    }
+
+    async function countingSort(array, canvas) {
+      const copiedArray = [...array];
+
+      const max = Math.max(...copiedArray);
+      const countArray = new Array(max + 1).fill(0);
+
+      for (let i = 0; i < copiedArray.length; i++) {
+        countArray[copiedArray[i]]++;
+      }
+
+      let k = 0;
+      for (let i = 0; i <= max; i++) {
+        while (countArray[i] > 0) {
+          copiedArray[k] = i;
+          k++;
+          countArray[i]--;
+
+          drawVerticalLines(canvas, copiedArray, "计数排序");
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+      }
+    }
+
+    async function bucketSort(array, canvas) {
+      const copiedArray = [...array];
+
+      const n = copiedArray.length;
+      const buckets = new Array(n);
+
+      for (let i = 0; i < n; i++) {
+        buckets[i] = [];
+      }
+      console.log("aaa", buckets);
+      for (let i = 0; i < n; i++) {
+        const bucketIndex = Math.floor(n * copiedArray[i] / 100)-1;
+        // console.log(bucketIndex, buckets.length, copiedArray.length, n, copiedArray[i], i);
+        buckets[bucketIndex].push(copiedArray[i]);
+      }
+      console.log("bbb", buckets);
+      for (let i = 0; i < n; i++) {
+        buckets[i] = insertionSort2(buckets[i], canvas);
+      }
+      console.log("ddd", buckets);
+      let k = 0;
+      for (let i = 0; i < n; i++) {
+        console.log("fff", i, buckets);
+        for (let j = 0; j < buckets[i].length; j++) {
+          copiedArray[k] = buckets[i][j];
+          k++;
+
+          drawVerticalLines(canvas, copiedArray, "桶排序");
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+      }
+    }
+
+    async function radixSort(array, canvas) {
+      const copiedArray = [...array];
+
+      const getMax = () => {
+        let max = copiedArray[0];
+        for (let i = 1; i < copiedArray.length; i++) {
+          if (copiedArray[i] > max) {
+            max = copiedArray[i];
+          }
+        }
+        return max;
+      };
+
+      const countingSortForRadix = async (exp) => {
+        const n = copiedArray.length;
+        const output = new Array(n).fill(0);
+        const count = new Array(10).fill(0);
+
+        for (let i = 0; i < n; i++) {
+          count[Math.floor(copiedArray[i] / exp) % 10]++;
+        }
+
+        for (let i = 1; i < 10; i++) {
+          count[i] += count[i - 1];
+        }
+
+        for (let i = n - 1; i >= 0; i--) {
+          output[count[Math.floor(copiedArray[i] / exp) % 10] - 1] = copiedArray[i];
+          count[Math.floor(copiedArray[i] / exp) % 10]--;
+        }
+
+        for (let i = 0; i < n; i++) {
+          copiedArray[i] = output[i];
+          drawVerticalLines(canvas, copiedArray, "基数排序");
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+      };
+
+      const max = getMax();
+
+      for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
+        await countingSortForRadix(exp);
+
+        drawVerticalLines(canvas, copiedArray, "基数排序");
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+    }
+
+    // 生成一个包含 100 个元素，元素范围在 1 到 100 之间的打乱数组
+    const dataArray = generateShuffledArray(SIZE);
+    // 获取 canvas 元素
+    const bubbleSortCanvas = document.getElementById("bubbleSortCanvas");
+    const selectionSortCanvas = document.getElementById("selectionSortCanvas");
+    const insertionSortCanvas = document.getElementById("insertionSortCanvas");
+
+    // 绘制初始数组
+    drawVerticalLines(bubbleSortCanvas, dataArray, "冒泡排序");
+    drawVerticalLines(selectionSortCanvas, dataArray, "选择排序");
+    drawVerticalLines(insertionSortCanvas, dataArray, "插入排序");
+    drawVerticalLines(mergeSortCanvas, dataArray, "归并排序");
+    drawVerticalLines(quickSortCanvas, dataArray, "快速排序");
+    drawVerticalLines(heapSortCanvas, dataArray, "堆排序");
+
+    drawVerticalLines(countingSortCanvas, dataArray, "计数排序");
+    drawVerticalLines(bucketSortCanvas, dataArray, "桶排序");
+    drawVerticalLines(radixSortCanvas, dataArray, "基数排序");
+
+    
+
+    // 执行排序并绘制过程
+    runSortingAlgorithm(bubbleSort, [...dataArray], bubbleSortCanvas);
+    runSortingAlgorithm(selectionSort, [...dataArray], selectionSortCanvas);
+    runSortingAlgorithm(insertionSort, [...dataArray], insertionSortCanvas);
+    runSortingAlgorithm(mergeSort, [...dataArray], mergeSortCanvas);
+    runSortingAlgorithm(quickSort, [...dataArray], quickSortCanvas);
+    runSortingAlgorithm(heapSort, [...dataArray], heapSortCanvas);
+    runSortingAlgorithm(countingSort, [...dataArray], countingSortCanvas);
+    runSortingAlgorithm(bucketSort, [...dataArray], bucketSortCanvas);
+    runSortingAlgorithm(radixSort, [...dataArray], radixSortCanvas);
+  </script>
+</body>
+</html>
