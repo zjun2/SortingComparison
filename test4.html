@@ -61,7 +61,7 @@
     <div class="sorting-container">
         <div style="flex: 0 0 calc(33.33% - 16px);">
             <canvas id="insertionSortCanvas" class="sorting-canvas" width="400" height="180"></canvas>
-            <p>插入排序 (渲染间隔10毫秒)</p>
+            <p>插入排序 (渲染间隔5毫秒)</p>
         </div>
         <div style="flex: 0 0 calc(33.33% - 16px);">
             <canvas id="bubbleSortCanvas" class="sorting-canvas" width="400" height="180"></canvas>
@@ -197,13 +197,13 @@
           j--;
           myCount++;
           drawVerticalLines2(canvas, copiedArray, "插入排序", myCount);
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise(resolve => setTimeout(resolve, 5));
         }
 
         copiedArray[j + 1] = key;
 
         drawVerticalLines2(canvas, copiedArray, "插入排序", myCount);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 5));
       }
     }
 
