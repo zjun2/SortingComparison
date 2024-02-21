@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>生命游戏</title>
+<style>
+    .cell {
+        width: 3px;
+        height: 3px;
+        border: 1px solid #ccc;
+        display: inline-block;
+        margin: 0; /* 去除格子间的外边距 */
+        padding: 0; /* 去除格子的内边距 */
+    }
+
+    /* 设置每行的高度 */
+    #grid {
+        line-height: 0;
+    }
+
+    #pauseResumeBtn {
+        margin-top: 10px; /* 距离上方一定距离 */
+    }
+</style>
+</head>
+<body>
+<button id="pauseResumeBtn">开始</button>
+<div id="grid"></div>
+<script>
+    // 定义格子的行数和列数
+    const rows = 130;
+    const cols = 280;
+
+    // 创建二维数组表示格子状态，0表示死亡，1表示存活
+    let grid = createGrid(rows, cols);
+
+    // 初始化格子状态
+    initializeGrid();
+
+    // 创建格子的DOM元素并添加到页面
+    const gridContainer = document.getElementById("grid");
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+            cell.addEventListener("click", toggleCellState);
+            gridContainer.appendChild(cell);
+        }
+        gridContainer.appendChild(document.createElement("br"));
+    }
+
+    // 输出初始状态
+    renderGrid();
+
+    // 演化一定次数
+    const generations = 100000;
+    let currentGeneration = 0;
+    let intervalId;
+
+    // 创建一个rows x cols大小的二维数组
+    function createGrid(rows, cols) {
+        let grid = new Array(rows);
+        for (let i = 0; i < rows; i++) {
+            grid[i] = new Array(cols).fill(0);
+        }
+        return grid;
+    }
+
+    // 初始化格子状态，随机设置一些细胞为存活状态
+    function initializeGrid() {
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                grid[i][j] = Math.random() < 0.5 ? 0 : 1;
+            }
+        }
+    }
+
+    // 渲染当前格子状态
+    function renderGrid() {
+        const cells = document.querySelectorAll(".cell");
+        cells.forEach(cell => {
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            cell.style.backgroundColor = grid[row][col] ? "black" : "white";
+        });
+    }
+
+    // 点击格子时切换细胞状态
+    function toggleCellState(event) {
+        const row = parseInt(event.target.dataset.row);
+        const col = parseInt(event.target.dataset.col);
+        grid[row][col] = grid[row][col] ? 0 : 1;
+        renderGrid();
+    }
+
+    // 开始演化
+    function startEvolution() {
+        intervalId = setInterval(evolve, 20); // 每次延迟一秒
+        document.getElementById("pauseResumeBtn").textContent = "暂停";
+    }
+
+    // 暂停演化
+    function pauseEvolution() {
+        clearInterval(intervalId);
+        document.getElementById("pauseResumeBtn").textContent = "恢复";
+    }
+
+    // 切换暂停和恢复状态
+    function togglePauseResume() {
+        var txt = document.getElementById("pauseResumeBtn").textContent;
+        console.log(111, txt);
+        if (txt == '暂停') {
+            pauseEvolution();
+        } else {
+            startEvolution();
+        }
+    }
+
+    // 演化一代
+    function evolve() {
+        let newGrid = createGrid(rows, cols);
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                let neighbors = countNeighbors(i, j);
+                if (grid[i][j] === 1) {
+                    // 存活细胞规则
+                    if (neighbors < 2 || neighbors > 3) {
+                        newGrid[i][j] = 0; // 存活细胞周围存活细胞少于2个或多于3个，死亡
+                    } else {
+                        newGrid[i][j] = 1; // 其他情况保持存活状态
+                    }
+                } else {
+                    // 死亡细胞规则
+                    if (neighbors === 3) {
+                        newGrid[i][j] = 1; // 死亡细胞周围有3个存活细胞，复活
+                    } else {
+                        newGrid[i][j] = 0; // 其他情况保持死亡状态
+                    }
+                }
+            }
+        }
+        grid = newGrid;
+        renderGrid();
+    }
+
+    // 计算某个细胞周围存活细胞的数量
+    function countNeighbors(x, y) {
+        let count = 0;
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (i === 0 && j === 0) continue;
+                let newX = x + i;
+                let newY = y + j;
+                if (newX >= 0 && newX < rows && newY >= 0 && newY < cols && grid[newX][newY] === 1) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    // 绑定按钮点击事件
+    document.getElementById("pauseResumeBtn").addEventListener("click", togglePauseResume);
+</script>
+</body>
+</html>
